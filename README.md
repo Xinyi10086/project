@@ -88,17 +88,6 @@ Functions: STLSQ
 Functions: l2_norm_factors, _odr_fit_powers, poly_model, STLSQ_ODR
 
 
-## Data and Outputs
-
-
-**Output / results directories**:
-- `project-Project/output`
-
-## Notes
-
-- STLSQ uses vertical residuals for fitting and model selection; for EIV, use ODR to obtain orthogonal residuals and compute BIC from the profiled ODR objective.
-- Threshold selection can be grid‑searched with BIC; when switching to ODR, redefine RSS to include both vertical misfit and predictor adjustments.
-
 ## License
 
 This project includes a license file:
