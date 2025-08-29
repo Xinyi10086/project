@@ -1,0 +1,255 @@
+\section{Methodology}
+\label{sec:meth}
+
+
+This section proposes establishing a model selection framework for the one-dimensional polynomial model in two different scenarios. 
+First, when noise is present only in the response variable, we address model selection using the Bayesian razor and SINDy approaches. Second, when noise affects both the predictors and the response, we employ the STLSQ–ODR framework to account explicitly for EIV problem.
+
+\subsection{Add the noise just in the response variable}
+\label{subsec:noise_y}
+
+The polynomial model with noise in the response variable is:
+\begin{equation} 
+\label{eq:modely_1}
+y_i = f(\boldsymbol{x_i}) + \varepsilon_i, \quad  \varepsilon_i \overset{\mathrm{i.i.d.}}{\sim} \mathcal{N}(0, \sigma^2), \quad i = 1 \ldots N
+\end{equation}
+where $f(x) = \alpha_0 + \alpha_1\boldsymbol{x}+\alpha_2\boldsymbol{x}^2+ \ldots + \alpha_n\boldsymbol{x}^n$. Or equivalently in matrix form:
+\begin{equation} 
+\label{eq:modely_2}
+\boldsymbol{y} = \mathbf{\Phi} \boldsymbol{w} + \boldsymbol{\varepsilon}, \qquad \boldsymbol{\varepsilon} \sim \mathcal{N}(0, \boldsymbol{\Sigma})
+\end{equation}
+where the design matrix and the basis functions are $\mathbf{\Phi} = \big(\phi(\boldsymbol{x_{1}})^{\mathsf{T}} \ldots\phi(\boldsymbol{x_{N}})^{\mathsf{T}}\big)^{\mathsf{T}}, 
+\phi(\boldsymbol{x})= (\boldsymbol{1}\ \boldsymbol{x} \ \boldsymbol{x}^{2} \ldots \boldsymbol{x}^{n})^{\mathsf{T}},$ and the off-diagonal entries of $\boldsymbol{\Sigma}$ are zero, such that we can denote $\boldsymbol{\Sigma} = (\rho_{ij})_{i,j=1}$ with $\rho_{ij} = 0$ for $i \neq j$. Assume that that the prior distribution of $\boldsymbol{w}$ follows the Gaussian distribution, that is $\boldsymbol{w} \sim \mathcal{N}(\mathbf{0}, \mathbf{\Lambda}_0^{-1}).$ 
+By virtue of the fact that a Gaussian distribution is closed under linear transformations, the distribution of the likelihood is still the Gaussian distribution: $p(\boldsymbol{y} \mid \boldsymbol{w}) = \mathcal{N}(\mathbf{\Phi} \boldsymbol{w}, \sigma^2 \mathbf{I})$.
+Using Gaussian approximations for the prior and likelihood can speed up computation.
+
+From Bayes’ rule, the posterior distribution of $p(\boldsymbol{w} \mid \boldsymbol{y}, \boldsymbol{\Phi}, \sigma^2, \boldsymbol{\Lambda}_0)$ can be expressed as being proportional to the product of the prior and the likelihood function: 
+\begin{equation}
+    p(\boldsymbol{w}\mid \boldsymbol{y}, \boldsymbol{\Phi}, \sigma^2, \boldsymbol{\Lambda}_0) \propto p(\boldsymbol{y}\mid \boldsymbol{w}, \boldsymbol{\Phi}, \sigma^2, \boldsymbol{\Lambda}_0) \, p(\boldsymbol{w}\mid \boldsymbol{\Phi}, \sigma^2, \boldsymbol{\Lambda}_0).
+\end{equation}
+Writing out the log posterior:
+\begin{equation}
+    \begin{aligned}
+\log p(\boldsymbol{w}\mid \boldsymbol{y}, \boldsymbol{\Phi}, \sigma^2, \boldsymbol{\Lambda}_0) = \; & 
+- \frac{1}{2 \sigma^2} \| \boldsymbol{y} - \mathbf{\Phi} \boldsymbol{w} \|^2
+- \frac{1}{2} \boldsymbol{w}^\mathsf{T} \mathbf{\Lambda}_0 \boldsymbol{w} + C \\
+=\; &
+- \frac{1}{2 \sigma^2} \left( \boldsymbol{y}^\mathsf{T} \boldsymbol{y} 
+- 2 \boldsymbol{w}^\mathsf{T} \mathbf{\Phi}^\mathsf{T} \boldsymbol{y} 
++ \boldsymbol{w}^\mathsf{T} \mathbf{\Phi}^\mathsf{T} \mathbf{\Phi} \boldsymbol{w} \right) 
+- \frac{1}{2} \boldsymbol{w}^\mathsf{T} \mathbf{\Lambda}_0 \boldsymbol{w} + C.
+\end{aligned}
+\end{equation}
+
+Grouping of quadratic and linear terms:
+\begin{equation}
+\label{log}
+    \begin{aligned}
+\log p(\boldsymbol{w} \mid \boldsymbol{y})
+& =
+    -\frac{1}{2}
+    \boldsymbol{w}^\mathsf{T}
+    \left( \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{\Phi} + \boldsymbol{\Lambda}_0 \right)
+    \boldsymbol{w}
+    + \boldsymbol{w}^\mathsf{T}
+    \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{y} + C
+\\
+& =
+    -\frac{1}{2}
+    (\boldsymbol{w} - \boldsymbol{\mu})^\mathsf{T} \left( \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{\Phi} + \boldsymbol{\Lambda}_0 \right) (\boldsymbol{w} - \boldsymbol{\mu})
+    - \boldsymbol{w}^\mathsf{T} \left( \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{\Phi} + \boldsymbol{\Lambda}_0 \right) \boldsymbol{\mu} \\
+&     + \boldsymbol{w}^\mathsf{T} \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{y} + C.
+\end{aligned}
+\end{equation}
+Inspection of the quadratic term reveals that the covariance matrix of the posterior distribution is
+\begin{equation}
+\label{covariance}
+    \boldsymbol{\Sigma} = \left( \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{\Phi} + \boldsymbol{\Lambda}_0 \right)^{-1}.
+\end{equation}
+So (\ref{log}) can be written as
+\begin{equation}
+    \log p(\boldsymbol{w} \mid \boldsymbol{y}) = -\frac{1}{2}
+    (\boldsymbol{w} - \boldsymbol{\mu})^\mathsf{T} \Sigma^{-1} (\boldsymbol{w} - \boldsymbol{\mu})
+    - \boldsymbol{w}^\mathsf{T} \Sigma^{-1} \boldsymbol{\mu}
+    + \boldsymbol{w}^\mathsf{T} \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{y} + C.
+\end{equation}
+Given that $\boldsymbol{w}^\mathsf{T} \boldsymbol{\Sigma}^{-1} \boldsymbol{\mu}
+    + \boldsymbol{w}^\mathsf{T} \sigma^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{y} = 0$, that we need $\boldsymbol{\Sigma}^{-1} \boldsymbol{\mu} = \sigma_n^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{y}$,
+It follows that the mean of the posterior distribution is
+\begin{equation}
+\label{mean}
+    \boldsymbol{\mu} = \boldsymbol{\Sigma} \left( \sigma_n^{-2} \boldsymbol{\Phi}^\mathsf{T} \boldsymbol{y} \right).
+\end{equation}
+In summary, the posterior distribution is Gaussian with
+\begin{equation}
+    p(\boldsymbol{w}\mid \boldsymbol{y}, \boldsymbol{\Phi}, \sigma^2, \boldsymbol{\Lambda}_0) \propto\ \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}).
+\end{equation}
+with $\boldsymbol{\mu}$ and $\boldsymbol{\Sigma}$ given by (\ref{mean}) and (\ref{covariance}).
+
+\subsubsection{The Mechanism of the Bayesian Razor: the Bayesian Evidence \& Occam Factor}
+
+This approach is grounded in the principle that Bayesian inference naturally balances model fit with model complexity through the Occam factor, thereby avoiding overfitting in polynomial model selection. 
+Specifically, under the assumption of a Gaussian prior distribution over model parameters, the Bayesian razor evaluates the marginal likelihood of each candidate polynomial model, penalizing unnecessarily complex models that do not substantially improve the data likelihood. 
+In contrast to classical information criteria such as AIC or BIC, which rely on asymptotic approximations, the Bayesian razor provides a fully probabilistic and principled framework that explicitly integrates uncertainty in both model parameters and data noise. 
+
+Bayesian inference offers a principled framework for model comparison that naturally incorporates Occam's razor, the preference for simpler models that sufficiently explain the data. The plausibility of a model $\mathrm{H}_i$ is quantified by its posterior probability:
+\begin{equation}
+\mathbb{P}(\mathrm{H}_i \mid \mathbf{D}) \propto \mathbb{P}(\mathbf{D} \mid \mathrm{H}_i) \mathbb{P}(\mathrm{H}_i),
+\end{equation}
+where $\mathbb{P}(\mathrm{H}_i)$ is the prior model probability and $\mathbb{P}(\mathbf{D} \mid \mathrm{H}_i)$ is the Bayesian evidence (marginal likelihood).
+
+\paragraph{Two levels of inference.}
+\begin{enumerate}
+    \item \textbf{Model fitting:} For a given model $\mathrm{H}_i$ with
+    parameters $\boldsymbol{w}$,
+    \begin{equation}
+    p(\boldsymbol{w} \mid \mathbf{D}, \mathrm{H}_i) =
+    \frac{p(\mathbf{D} \mid \boldsymbol{w}, \mathrm{H}_i) p(\boldsymbol{w} \mid \mathrm{H}_i)}{p(\mathbf{D} \mid \mathrm{H}_i)},
+    \end{equation}
+    where $p(\mathbf{D}\mid \boldsymbol{w}, \mathrm{H}_i)$ is the likelihood and $p(\boldsymbol{w} \mid \mathrm{H}_i)$
+    the parameter prior. The denominator $p(\mathbf{D} \mid \mathrm{H}_i)$ is the evidence, often
+    ignored in parameter estimation but essential for model comparison.
+
+    \item \textbf{Model comparison:} Models are ranked by their evidences,
+    assuming equal model priors:
+    \begin{equation}
+    p(\mathbf{D} \mid \mathrm{H}_i) = \int p(\mathbf{D} \mid \boldsymbol{w}, \mathrm{H}_i) p(\boldsymbol{w} \mid \mathrm{H}_i) \, d\boldsymbol{w}.
+    \end{equation}
+    Complex models with larger parameter spaces dilute their predictive probability
+    over more possibilities, resulting in a natural penalty.
+\end{enumerate}
+
+\paragraph{Evidence decomposition and Occam factor.}
+When the posterior is sharply peaked at the maximum a posteriori estimate
+$\boldsymbol{w}_{\mathrm{MAP}}$, Laplace's method yields:
+\begin{equation}
+p(\mathbf{D} \mid \mathrm{H}_i) \approx p(\mathbf{D} \mid \boldsymbol{w}_{\mathrm{MAP}}, \mathrm{H}_i) \times
+\frac{\sigma_{\boldsymbol{w} \mid \mathbf{D}}}{\sigma_{\boldsymbol{w}}},
+\end{equation}
+where $\sigma_{\boldsymbol{w}}$ and $\sigma_{\boldsymbol{w} \mid \mathbf{D}}$ denote the prior and
+posterior widths of the parameter space, respectively.
+The second factor,
+\begin{equation}
+\mathrm{Occam\ factor} = \frac{\sigma_{\boldsymbol{w} \mid \mathbf{D}}}{\sigma_{\boldsymbol{w}}},
+\end{equation}
+penalizes models whose parameter space must be finely tuned to fit the data.
+In the multi-parameter case, the Occam factor generalizes to:
+\begin{equation}
+p(\mathbf{D} \mid \mathrm{H}_i) \approx p(\mathbf{D} \mid \boldsymbol{w}_{\mathrm{MAP}}, \mathrm{H}_i) \,
+p(\boldsymbol{w}_{\mathrm{MAP}} \mid \mathrm{H}_i) \,
+\det\nolimits^{-1/2}\!\left(\frac{\mathbf{A}}{2\pi}\right),
+\end{equation}
+where $\mathbf{A}$ is the Hessian of the negative log posterior.
+
+Laplace approximation about the MAP point
+yields
+\[
+\log p(\mathbf{D} \mid \mathrm{H}_i) \approx
+\underbrace{\log p(\mathbf D \mid \boldsymbol{w}_{\mathrm{MAP}},\mathrm{H}_i)}_{\text{Likelihood at MAP}}
++
+\underbrace{\log p(\boldsymbol{w}_{\mathrm{MAP}}\mid \mathrm{H}_i) - \frac{1}{2} \log\det\left( \frac{\bf{A}}{2\pi}\right),}_{\text{Occam factor}}
+\]
+where
+$\bf{A} \;=\; \bf{\Lambda}_{\text{post}}
+       = \mathbf{\Lambda}_0 + \boldsymbol{\beta} \Phi^{\!\top} \Phi,
+\bf{\Sigma}_{\text{post}} = \bf{A}^{-1},  
+\boldsymbol{w}_{\mathrm{MAP}}
+       = \bf{\Sigma}_{\text{post}}
+         \bigl(\mathbf{\Lambda}_0 \boldsymbol\mu_0 + \boldsymbol{\beta} \Phi^{\!\top} \mathbf t \bigr).$
+
+\smallskip
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Best–Fit Likelihood captures how well the model fits the data at the MAP parameters.
+  \item Occam factor penalises model complexity via $\det \mathbf{A}$: the narrower the posterior, the larger the penalty.
+\end{itemize}
+
+However, extending the Bayesian razor framework to the error-in-variable (EIV) problem is highly challenging. The main difficulty arises because EIV models fundamentally alter the likelihood structure. The observed predictors no longer represent the true regressors, leading to attenuation bias and complex error propagation through nonlinear basis functions. As a consequence, the marginal likelihood integral required by the Bayesian razor becomes analytically intractable, since it must integrate over both latent clean predictors and model parameters simultaneously. This dramatically increases computational cost and introduces severe identifiability issues, as different combinations of latent predictor distributions and polynomial structures may yield similar fits to noisy data. 
+To address this difficulty, we turn to ODR, which provides a principled way to handle measurement errors in both predictors and responses.
+
+\subsubsection{The Mechanism of the STLSQ}
+Since implementing full Bayesian model selection is difficult when solving the EIV problem, we resort to simpler, sparsity-inducing alternatives that thereby approximate Occam’s razor.
+Within the SINDy framework, the STLSQ algorithm serves as an alternative, computationally efficient approach to induce sparsity, offering a simpler substitute to more elaborate Bayesian selection methods.
+The STLSQ algorithm is the standard regression procedure employed in the SINDy framework to enforce sparsity in the model selection process (\cite{brunton2016}). Its primary objective is to identify a parsimonious subset of active basis functions from a potentially large candidate library $\mathbf{\Phi}(x)$. Consider observations $\boldsymbol{y} \in \mathbb{R}^n$ and the design matrix $\mathbf{\Phi} \in \mathbb{R}^{n \times p}$ constructed from polynomial basis functions. The regression model is same as equation  (\ref{eq:modely_2}).
+
+The STLSQ algorithm alternates between two steps:
+\begin{itemize}
+    \item \textbf{Least-squares update:} Solve the ordinary least squares problem
+    \begin{equation}
+\hat{\boldsymbol{w}} = \arg\min_{\boldsymbol{w}} \|\boldsymbol{y} - \mathbf{\Phi} \boldsymbol{w}\|_2^2,
+\end{equation}
+to obtain coefficient estimates.
+    \item \textbf{Thresholding:} Apply a sparsity threshold $\lambda > 0$ to eliminate coefficients whose magnitude falls below the threshold:
+\begin{equation}
+\hat{w}_j \leftarrow 0 \quad \text{if} \quad |\hat{w}_j| < \lambda.
+\end{equation}
+\end{itemize}
+
+This two-step procedure is repeated iteratively until convergence. The mechanism ensures that small, noise-dominated coefficients are discarded while retaining only the dominant terms that capture the essential dynamics of the system. 
+In this way, STLSQ prevents overfitting by balancing model fit with parsimony, thereby providing interpretable models that generalise well. Much like Bayesian evidence, it can be regarded as applying the principle of Occam’s razor, but without computing the posterior distribution, which makes it considerably simpler and more computationally efficient.
+
+
+
+\subsection{Add the noise in both predictor variables and response variable}
+\label{subsec:noise_xy}
+
+\subsubsection{The basic principles of ODR}
+Let $\{(\boldsymbol{x}_i,y_i)\}_{i=1}^n$ be observed data, with $\boldsymbol{x}_i\in\mathbb{R}^m$ and scalar response $y_i$.
+We posit a smooth model $y = f(\boldsymbol{x};\boldsymbol{\beta})$ with parameter vector $\boldsymbol{\beta}\in\mathbb{R}^p$.
+Unlike ordinary least squares (OLS), which assumes errors only in $y$, ODR allows measurement errors in both the response and the predictors. We write
+\begin{equation}
+    y_i = f(\boldsymbol{x}_i+\boldsymbol{\delta}_i;\,\boldsymbol{\beta})\;-\;\varepsilon_i,
+\end{equation}
+where $\varepsilon_i$ is the additive error in the response and $\boldsymbol{\delta}_i\in\mathbb{R}^m$ is the additive error (adjustment) in the predictors.
+
+
+Define the orthogonal distance of the point $(\boldsymbol{x}_i,y_i)$ to the model as $r_i^2 \;=\; \varepsilon_i^2 \;+\; \|\boldsymbol{\delta}_i\|_2^2.$
+Minimising the sum of squared distances subject to the model relation
+\begin{equation}
+    \min_{\boldsymbol{\beta},\;\{\varepsilon_i,\boldsymbol{\delta}_i\}}\;\sum_{i=1}^n r_i^2,
+\end{equation}
+same as the unconstrained problem
+\begin{equation}
+\min_{\boldsymbol{\beta},{\boldsymbol{\delta}_i}} \;\sum_{i=1}^n \Big\{( f(\boldsymbol{x}_i+\boldsymbol{\delta}_i;\boldsymbol{\beta}) - y_i )^2 \;+\; \|\boldsymbol{\delta}_i\|_2^2\Big\}.
+\end{equation}
+In ODR, the optimal parameters $\hat{\boldsymbol{\beta}}$ minimize the sum of squared orthogonal distances from the observed points $(\boldsymbol{x}_i, y_i)$ to the model curve $f(\cdot; \boldsymbol{\beta})$, leading to the optimization problem
+\begin{equation}
+    \min_{\boldsymbol{\beta}, \boldsymbol{\delta}_i} \sum_{i=1}^n \left[ f(\boldsymbol{x}_i+\boldsymbol{\delta}_i; \boldsymbol{\beta}) - y_i \right]^2
++ d_i^2 \boldsymbol{\delta}_i^2,
+\end{equation}
+where $d_i = \sigma_\epsilon / \sigma_\delta$ and $w_i = 1 / \sigma_\epsilon$ are weights.
+
+
+
+
+\subsection{The Mechanism of the STLSQ\_ODR}
+
+For the model which adds noise in both predictor variables and the response variable, we combine the SINDy framework with ODR.
+ODR explicitly accounts for errors in both the predictors and the response by minimizing the scaled orthogonal distance from noisy observations to the model manifold, thus providing de-noised inputs and more reliable regression estimates. 
+Within our framework, the SINDy algorithm first constructs a candidate library of nonlinear functions of the state variables, while ODR is employed to perform sparse regression under an errors-in-variables setting. This joint approach allows us to recover the correct governing equations even in the presence of correlated noise in both predictors and responses, improving robustness compared with standard SINDy.
+
+
+
+To ensure numerical stability across polynomial orders, we normalise each basis function using its $L^2([-1,1])$ norm,
+\begin{equation}
+    \mathrm{factor}[k] = \sqrt{\frac{2k+1}{2}}, \quad k=0,1,\dots,d,
+\end{equation}
+and perform regression in the normalised basis. Since the sparsity threshold $\lambda$ is applied uniformly across all coefficients, the scaling of the basis directly affects whether terms are eliminated or retained. Without normalization, higher-order terms may appear artificially large and survive the thresholding step, while lower-order terms may be prematurely discarded. By applying the $L^2([-1,1])$ normalization, we ensure that the thresholding operates on a balanced scale across all polynomial orders, thereby improving the robustness of sparse model selection. 
+
+Given observed predictors $x \in \mathbb{R}^n$ and response $\dot{x} \in \mathbb{R}^n$, ODR estimates the coefficient vector $\hat{w}$ by solving
+\begin{equation}
+    \hat{\boldsymbol{w}} = \arg\min_{\boldsymbol{w},\,\boldsymbol{\delta}_i} \sum_{i=1}^n \left( \dot{\boldsymbol{x}}_i - \mathbf{\Phi}(\boldsymbol{x}_i + \boldsymbol{\delta}_i)\boldsymbol{w} \right)^2 + \|\boldsymbol{\delta}_i\|_2^2,
+\end{equation}
+where $\boldsymbol{\delta}_i$ denotes the adjustment to noisy predictors. 
+
+The Sequential Thresholded step is then applied on the normalized coefficients:  
+\begin{equation}
+    \hat{w}_j \leftarrow 0 \quad \text{if} \quad |\hat{w}_j| < \lambda,
+\end{equation}
+with $\lambda > 0$ a sparsity threshold. The regression is subsequently refitted on the retained terms, and this two-step procedure is iterated until convergence. Finally, the coefficients are denormalised back to the standard polynomial scale:
+\begin{equation}
+    w_j = \hat{w}_j \cdot \mathrm{factor}[j], \quad j=0,1,\dots,d.
+\end{equation}
+
+This iterative procedure, which we term STLSQ-ODR, integrates the mechanism of SINDy with ODR. As a result, the method yields sparse yet robust recovery of governing equations, even in the presence of correlated noise in both predictors and responses.
+
+

@@ -1,0 +1,110 @@
+\documentclass{statsmsc}
+
+\title{Extending Sparse Bayesian Model Identification to Polynomial Models with Errors-in-Variables Regression}
+\author{Xinyi Zhang}
+\CID{06006350}
+\supervisor{Guy Nason and Lloyd Fung}
+\date{1 August 2025}
+%For today's date, use:
+%\date{\today}
+\logoimg{}
+
+% THIS IS WHERE NEW COMMANDS CAN BE DEFINED
+
+% commands below only used in the proof; otherwise can be deleted
+\newcommand{\consta}{a}
+\newcommand{\X}{X}
+\newcommand{\EE}[1]{ \mathrm{E} [ #1 ] }
+\newcommand{\inparenth}[1]{\left( #1 \right)}
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\hypersetup{
+    colorlinks,
+    linkcolor={blue!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!50!black}
+}
+
+
+\begin{document}
+
+% Generates the Title Page
+\maketitle
+
+% Generates plagiarism declaration
+\declarationname{Xinyi Zhang}
+\declarationdate{20 August 2025}
+\declaration 
+
+\begin{acknowledgements}
+    I would like to express my sincere gratitude to my supervisors, Professor Guy Nason and Dr. Lloyd Fung, for their invaluable guidance and constructive feedback throughout the development of this thesis. I am especially grateful to Dr. Fung for his encouragement and continuous support during the course of my research, which has been instrumental in helping me complete this work.
+\end{acknowledgements}
+
+%=================================================================
+% VERY IMPORTANT
+% This command switches from Roman to Arabic numbering for main part of report. Do not modify.
+\mainmatter
+%=================================================================
+
+
+\begin{abstract}
+    Direct discovery of governing equations remains a central challenge in scientific machine learning, especially under noisy measurement conditions. This thesis develops two frameworks for sparse polynomial model selection. First, we introduce a Bayesian evidence–based approach that directly computes posterior model probabilities, thereby implementing Occam’s razor in a principled way. This framework addresses the case where noise is present only in the response variable, balancing model fit with parsimony without relying on asymptotic approximations such as Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC). Second, to tackle the more challenging error-in-variables (EIV) problem where both predictors and responses are noisy, we propose the Sequentially Thresholded Least Squares with Orthogonal Distance Regression (STLSQ-ODR). This method combines sparse identification of nonlinear dynamics (SINDy) with ODR’s ability to correct for measurement error, providing robust recovery of governing equations under Gaussian, heavy-tailed, or correlated noise. 
+    Simulation studies demonstrate that the Bayesian razor effectively identifies parsimonious models when noise is confined to the response variable, while STLSQ-ODR provides more reliable recovery under the EIV problem. 
+    Across noise structures, BIC-based thresholding consistently outperforms OLS-based selection in stability, although all methods deteriorate under extreme noise. Overall, the findings highlight Bayesian evidence and ODR regression as complementary approaches for sparse model discovery under noisy conditions, laying the groundwork for extensions to higher-dimensional and practical applications.
+\end{abstract}
+
+%===============================================================
+%
+% Students please remove the General tips when submitting your report
+%
+%===============================================================
+
+
+\input{MSc_Statistics_Research_Report_Template/section/introduction}
+\input{MSc_Statistics_Research_Report_Template/section/Methodology}
+\input{MSc_Statistics_Research_Report_Template/section/Simulation Studies}
+\input{MSc_Statistics_Research_Report_Template/section/Discussion}
+\input{MSc_Statistics_Research_Report_Template/section/Endmatter}
+
+
+
+
+
+
+
+
+\clearpage
+
+%%References part of the main text
+% References: modify the file refs.bib
+\bibliographystyle{apalike}
+\bibliography{refs}
+
+\clearpage
+
+%=========================================================
+%% Create supplementary material 
+%
+%
+% - Providing supplementary materials to your report is voluntary and will not normally be read by your examiners.
+% - If you wish to include supplementary materials, add these by modifying the file 
+%   `supplementary.tex`
+% - otherwise deactive the include command below
+%
+%
+%=========================================================
+
+%% reset page counter and start appendix pages numbering
+\pagenumbering{arabic}
+\renewcommand*{\thepage}{Supplementary Material Page \arabic{page}}
+\renewcommand{\thesection}{\Alph{section}}
+%% Supplementary Material goes here
+\appendix
+\include{supplementary}
+%=========================================================
+
+
+\end{document}
